@@ -59,6 +59,7 @@ namespace HumanUI.Components.UI_Elements
         {
             pManager.AddGenericParameter("Slider", "Sl", "The slider(s) to add to the window.", GH_ParamAccess.tree);
             pManager.AddNumberParameter("Snap Value", "Sn", "An optional value to round/snap slider to. This overrides the native settings on the GH slider.", GH_ParamAccess.list);
+            pManager.AddIntegerParameter("Font Size", "FS", "Font size for the label.", GH_ParamAccess.item, 16);
             pManager[1].Optional = true;
 
         }
@@ -83,6 +84,10 @@ namespace HumanUI.Components.UI_Elements
         {
             GH_Structure<IGH_Goo> slidersAsObjects = new GH_Structure<IGH_Goo>();
             List<double> snapValues = new List<double>();
+
+            int fontsize = 16;
+            DA.GetData<int>("Font Size", ref fontsize);
+
 
             //an optional value to store slider snapping
             if (!DA.GetDataList<double>("Snap Value", snapValues))
@@ -137,7 +142,15 @@ namespace HumanUI.Components.UI_Elements
 
                 // Because we're actually outputting a list of objects (unlike most other UI element components) we have to
                 // calc the output index ourselves.
-                sliderPanels.Add(new UIElement_Goo(MakeSlider(sl, ref sliderLabels, snapValues[i % snapValues.Count]), String.IsNullOrWhiteSpace(sl.NickName) ? "" : sl.ImpliedNickName, InstanceGuid, sliderIndex));
+                sliderPanels.Add(
+                    new UIElement_Goo(MakeSlider(
+                        sl, 
+                        ref sliderLabels, 
+                        snapValues[i % snapValues.Count],
+                        ref fontsize), 
+                    String.IsNullOrWhiteSpace(sl.NickName) ? "" : sl.ImpliedNickName, 
+                    InstanceGuid, 
+                    sliderIndex));
                 sliderIndex++;
 
                 // increment snapvalue index
@@ -231,12 +244,21 @@ namespace HumanUI.Components.UI_Elements
         /// <param name="slider">The slider.</param>
         /// <param name="labelList">The label list.</param>
         /// <returns>A DockPanel containing the slider and labels.</returns>
-        private DockPanel MakeSlider(GH_NumberSlider slider, ref List<Label> labelList, double snapValue)
+        private DockPanel MakeSlider(GH_NumberSlider slider, ref List<Label> labelList, double snapValue, ref int fontsize)
         {
             int decimalPlaces = slider.Slider.DecimalPlaces;
             string name = slider.ImpliedNickName;
             //if (String.IsNullOrWhiteSpace(name) || name.Length == 0) name = "Slider";
-            return createNewSliderWithLabels(slider.Slider.Minimum, slider.Slider.Maximum, slider.Slider.Value, name, slider.Slider.Type == Grasshopper.GUI.Base.GH_SliderAccuracy.Integer, decimalPlaces, ref labelList, snapValue);
+            return createNewSliderWithLabels(
+                slider.Slider.Minimum, 
+                slider.Slider.Maximum, 
+                slider.Slider.Value, 
+                name, 
+                slider.Slider.Type == Grasshopper.GUI.Base.GH_SliderAccuracy.Integer, 
+                decimalPlaces, 
+                ref labelList, 
+                snapValue,
+                ref fontsize);
         }
 
         /// <summary>
@@ -250,9 +272,18 @@ namespace HumanUI.Components.UI_Elements
         /// <param name="decPlaces">The decimal places.</param>
         /// <param name="sliderLabels">The slider labels.</param>
         /// <returns></returns>
-        public DockPanel createNewSliderWithLabels(Decimal min, Decimal max, Decimal startVal, string name, bool integerSlider, int decPlaces, ref List<Label> sliderLabels, double snapValue)
+        public DockPanel createNewSliderWithLabels(
+            Decimal min, 
+            Decimal max, 
+            Decimal startVal, 
+            string name, 
+            bool integerSlider, 
+            int decPlaces, 
+            ref List<Label> sliderLabels, 
+            double snapValue,
+            ref int fontsize)
         {
-            return createNewSliderWithLabels((double)min, (double)max, (double)startVal, name, integerSlider, decPlaces, ref sliderLabels, snapValue);
+            return createNewSliderWithLabels((double)min, (double)max, (double)startVal, name, integerSlider, decPlaces, ref sliderLabels, snapValue, ref fontsize);
         }
 
         /// <summary>
@@ -266,7 +297,8 @@ namespace HumanUI.Components.UI_Elements
         /// <param name="decPlaces">The decimal places.</param>
         /// <param name="sliderLabels">The slider labels.</param>
         /// <returns>a Dockpanel containing the slider and labels</returns>
-        public DockPanel createNewSliderWithLabels(double min, double max, double startVal, string name, bool integerSlider, int decPlaces, ref List<Label> sliderLabels, double snapValue)
+        public DockPanel createNewSliderWithLabels(double min, double max, double startVal, string name, 
+        bool integerSlider, int decPlaces, ref List<Label> sliderLabels, double snapValue, ref int fontsize)
         {
             //initialize slider
             Slider slider = new Slider();
@@ -305,6 +337,7 @@ namespace HumanUI.Components.UI_Elements
             Label label = new Label();
             label.HorizontalContentAlignment = System.Windows.HorizontalAlignment.Right;
             label.Content = name;
+            label.FontSize = fontsize;
 
             if (showLabel)
             {
@@ -357,6 +390,7 @@ namespace HumanUI.Components.UI_Elements
 
                 //set the width to approx max width
                 readout.Width = readout.DesiredSize.Width;
+                readout.FontSize = fontsize;
 
                 //bind it to the slider Value
                 Binding myBinding = new Binding("Value");
@@ -367,6 +401,7 @@ namespace HumanUI.Components.UI_Elements
                 DockPanel.SetDock(readout, Dock.Right);
                 internalDockPanel.Children.Add(readout);
             }
+
             //Create a grid to contain the slider, and any under-slider labels
             Grid SliderGrid = new Grid();
             if (showBounds)
@@ -380,8 +415,8 @@ namespace HumanUI.Components.UI_Elements
                 lowerBound.Content = String.Format(numberFormat, min);
                 upperBound.Content = String.Format(numberFormat, max);
 
-                lowerBound.FontSize = 10;
-                upperBound.FontSize = 10;
+                lowerBound.FontSize = fontsize;
+                upperBound.FontSize = fontsize;
                 lowerBound.VerticalContentAlignment = VerticalAlignment.Bottom;
                 upperBound.VerticalContentAlignment = VerticalAlignment.Bottom;
 
