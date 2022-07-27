@@ -57,7 +57,7 @@ namespace HumanUI.Components.UI_Elements
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter("Slider", "Sl", "The slider(s) to add to the window.", GH_ParamAccess.tree);
+            pManager.AddGenericParameter("Slider", "Sl", "The slider(s) to add to the window.", GH_ParamAccess.list);
             pManager.AddNumberParameter("Snap Value", "Sn", "An optional value to round/snap slider to. This overrides the native settings on the GH slider.", GH_ParamAccess.list);
             pManager[1].Optional = true;
             pManager.AddIntegerParameter("Font Size", "FS", "Font size for the label.", GH_ParamAccess.item, 16);
@@ -72,6 +72,7 @@ namespace HumanUI.Components.UI_Elements
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
             pManager.AddGenericParameter("Sliders", "S", @"The Slider UI elements. Use in conjunction with an ""Add Elements"" component.", GH_ParamAccess.list);
+            pManager.AddGenericParameter("Nicknames", "N", @"List of slider's name.", GH_ParamAccess.list);
         }
 
         int sliderIndex = 0;
@@ -104,6 +105,8 @@ namespace HumanUI.Components.UI_Elements
             List<Label> sliderLabels = new List<Label>();
             //container to hold the UIElement_Goo objects wrapping each slider
             List<UIElement_Goo> sliderPanels = new List<UIElement_Goo>();
+            List<string> listNames = new List<string>();
+
             //get the GH doc
             GH_Document doc = OnPingDocument();
             if (doc == null) return;
@@ -151,6 +154,7 @@ namespace HumanUI.Components.UI_Elements
                     String.IsNullOrWhiteSpace(sl.NickName) ? "" : sl.ImpliedNickName, 
                     InstanceGuid, 
                     sliderIndex));
+                listNames.Add(String.IsNullOrWhiteSpace(sl.NickName) ? "" : sl.ImpliedNickName);
                 sliderIndex++;
 
                 // increment snapvalue index
@@ -168,6 +172,7 @@ namespace HumanUI.Components.UI_Elements
             }
             //pass out the sliders
             DA.SetDataList("Sliders", sliderPanels);
+            DA.SetDataList("Nicknames", listNames);
         }
 
         //return the greatest width from a list of label elements
