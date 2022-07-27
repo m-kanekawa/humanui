@@ -59,9 +59,9 @@ namespace HumanUI.Components.UI_Elements
         {
             pManager.AddGenericParameter("Slider", "Sl", "The slider(s) to add to the window.", GH_ParamAccess.tree);
             pManager.AddNumberParameter("Snap Value", "Sn", "An optional value to round/snap slider to. This overrides the native settings on the GH slider.", GH_ParamAccess.list);
-            pManager.AddIntegerParameter("Font Size", "FS", "Font size for the label.", GH_ParamAccess.item, 16);
             pManager[1].Optional = true;
-
+            pManager.AddIntegerParameter("Font Size", "FS", "Font size for the label.", GH_ParamAccess.item, 16);
+            pManager[2].Optional = true;
         }
 
         public override GH_Exposure Exposure => GH_Exposure.primary;
