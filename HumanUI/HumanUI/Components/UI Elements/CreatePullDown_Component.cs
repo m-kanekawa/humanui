@@ -5,6 +5,7 @@ using Grasshopper.Kernel;
 using Rhino.Geometry;
 using System.Windows;
 using System.Windows.Controls;
+using System.Drawing;
 using System.Windows.Data;
 using Grasshopper.Kernel.Special;
 using System.Linq;
@@ -76,6 +77,10 @@ namespace HumanUI.Components.UI_Elements
             pManager.AddGenericParameter("List Items", "L", "The initial list of options to display in the list.", GH_ParamAccess.list);
             pManager.AddIntegerParameter("Selected Index", "I", "The initially selected index. Defaults to the first item.", GH_ParamAccess.item);
             pManager[2].Optional = true;
+            pManager.AddTextParameter("Selected Text", "T", "The initially selected index. Defaults to the first item.", GH_ParamAccess.item, "");
+            pManager[3].Optional = true;
+            pManager.AddIntegerParameter("Font Size", "FS", "Font size for the label.", GH_ParamAccess.item, 16);
+            pManager[4].Optional = true;
         }
 
         /// <summary>
@@ -99,16 +104,21 @@ namespace HumanUI.Components.UI_Elements
         {
             string label = "";
             DA.GetData<string>("Label", ref label);
+            
+            int fontsize = 16;
+            DA.GetData<int>("Font Size", ref fontsize);
 
             if (DA.Iteration == 0) Iterator = 0;
             List<GH_ValueList> GHValLists = new List<GH_ValueList>();
-
 
             List<object> listItems = new List<object>();
             int selectedIndex = 0;
 
             if (!DA.GetDataList<object>("List Items", listItems)) return;
             bool selectedIndexSupplied = DA.GetData<int>("Selected Index", ref selectedIndex);
+
+            string selectedText = "";
+            bool selectedTextSupplied = DA.GetData<string>("Selected Text", ref selectedText);
 
             //try to retrieve any attached GHValueLists
             GHValLists.AddRange(Params.Input[1].Sources.Where(s => s is GH_ValueList).Cast<GH_ValueList>());
@@ -133,6 +143,7 @@ namespace HumanUI.Components.UI_Elements
             {
                 //initialize combobox
                 ComboBox pd = new ComboBox();
+                pd.FontSize = fontsize;
                 //for each string add a textbox object to the combobox
                 foreach (object item in listItems)
                 {
@@ -141,7 +152,22 @@ namespace HumanUI.Components.UI_Elements
                     pd.Items.Add(textbox);
                 }
                 pd.Margin = new Thickness(4);
-                pd.SelectedIndex = selectedIndex;
+
+                if (selectedTextSupplied)
+                {
+                    int idx = 0;
+                    foreach (object item in listItems){
+                        string text = item.ToString();
+                        if (text.Equals(selectedText)){
+                            break;
+                        }
+                        idx++;
+                    }
+                    pd.SelectedIndex = idx;
+                }
+                else{
+                    pd.SelectedIndex = selectedIndex;
+                }
 
                 DockPanel sp = new DockPanel();
                 //  sp.Orientation = Orientation.Horizontal;
@@ -150,6 +176,7 @@ namespace HumanUI.Components.UI_Elements
                 sp.Margin = new Thickness(4);
                 Label l = new Label();
                 l.Content = label;
+                l.FontSize = fontsize;
 
                 //add the label to the stackpanel if showLabel is true
                 if (!string.IsNullOrWhiteSpace(label) & showLabel)
@@ -179,6 +206,7 @@ namespace HumanUI.Components.UI_Elements
                 {
                     //initialize combobox
                     ComboBox pd = new ComboBox();
+                    pd.FontSize = fontsize;
                     //for each string add a textbox object to the combobox
 
                     List<string> values = valList.ListItems.Select(li => li.Name).ToList();
@@ -206,6 +234,7 @@ namespace HumanUI.Components.UI_Elements
                     sp.Margin = new Thickness(4);
                     Label l = new Label();
                     l.Content = label;
+                    l.FontSize = fontsize;
 
                     //add the label to the stackpanel if showLabel is true
                     if (!string.IsNullOrWhiteSpace(label) & showLabel)
