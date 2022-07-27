@@ -197,6 +197,8 @@ namespace HumanUI.Components.UI_Elements
             pManager[0].Optional = true;
             pManager.AddTextParameter("Image Path", "I", "The image to display on the button.", GH_ParamAccess.item);
             pManager[1].Optional = true;
+            pManager.AddIntegerParameter("Font Size", "FS", "Font size for the label.", GH_ParamAccess.item, 16);
+            pManager[2].Optional = true;
         }
 
         /// <summary>
@@ -214,14 +216,20 @@ namespace HumanUI.Components.UI_Elements
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             string name = "Button";
-            string imagePath = "";
             bool hasText = DA.GetData<string>("Button Name", ref name);
+
+            string imagePath = "";
             bool hasIcon = DA.GetData<string>("Image Path", ref imagePath);
+
+            int fontsize = 16;
+            DA.GetData<int>("Font Size", ref fontsize);
+
             if (!hasText && !hasIcon) return;
             //Initialize the button
             Button btn = new Button();
             //make button not focusable
             btn.Focusable = false;
+            btn.FontSize = fontsize;
             
             SetupButton(name, imagePath, hasText, hasIcon, btn, bs);         
             //pass out the button
